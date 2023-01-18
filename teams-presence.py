@@ -45,14 +45,15 @@ try:
 	import configparser
 	from urllib.error import HTTPError
 	import json
-	import unicornhat as unicorn
+	from unicornhatmini import UnicornHATMini
+	unicorn = UnicornHATMini()
 	import threading
 	import sys
 	import urllib.parse
 	from time import sleep
 	from datetime import datetime, time
 	from signal import signal, SIGINT
-	from gpiozero import CPUTemperature
+#	from gpiozero import CPUTemperature
 	import pyqrcode
 except ModuleNotFoundError as ex:
 	printerror("The app could not be started.")
@@ -154,7 +155,7 @@ def handler(signal_received, frame):
 	blinkThread.do_run = False
 	blinkThread.join()
 	switchOff()
-	exit(0)
+	exit()
 
 # Disable Printing
 def blockPrint():
@@ -225,7 +226,7 @@ def setColor(r, g, b, brightness, speed) :
 	globalBlue = b
 
 	if brightness == '' :
-		unicorn.brightness(brightness_led)
+		unicorn.set_brightness(brightness_led)
 
 	for y in range(height):
 		for x in range(width):
@@ -235,7 +236,7 @@ def setColor(r, g, b, brightness, speed) :
 def pulse():
 	for b in range(0, 7):
 		blockPrint()
-		unicorn.brightness(b/10)
+		unicorn.set_brightness(b/10)
 		enablePrint()
 		for y in range(height):
 			for x in range(width):
@@ -245,7 +246,7 @@ def pulse():
 	sleep(1)
 	for b in range(6, 0, -1):
 		blockPrint()
-		unicorn.brightness(b/10)
+		unicorn.set_brightness(b/10)
 		enablePrint()
 		for y in range(height):
 			for x in range(width):
@@ -298,10 +299,16 @@ def switchOff() :
 	globalRed = 0
 	globalGreen = 0
 	globalBlue = 0
-	if blinkThread != None :
-		blinkThread.do_run = False
+	red = 0
+	green = 0
+	blue = 0
+	blinkThread = threading.Thread(target=setColor, args=(red, green, blue, '', ''))
+	blinkThread.do_run = True
+	blinkThread.start()
+#	if blinkThread != None :
+#		blinkThread.do_run = False
 	unicorn.clear()
-	unicorn.off()
+#	unicorn.off()
 
 class LightPoint:
 
@@ -426,15 +433,15 @@ def Authorize():
 
 def printHeader():
 	# Get CPU temp
-	cpu = CPUTemperature()
+#	cpu = CPUTemperature()
 
 	os.system('clear')
 	print("============================================")
 	print("            MSFT Teams Presence")
 	print("============================================")
 	print()
-	cpu_r = round(cpu.temperature, 2)
-	print("Current CPU:\t\t" + str(cpu_r) + "°C")
+#	cpu_r = round(cpu.temperature, 2)
+#	print("Current CPU:\t\t" + str(cpu_r) + "°C")
 
 
 # Check for Weekend
@@ -469,7 +476,7 @@ def check_workingtimes():
 		return
 
 	# Get CPU temp
-	cpu = CPUTemperature()
+#	cpu = CPUTemperature()
 
 	while is_time_between(workday_start, workday_end) == False:
 		printHeader()
@@ -502,8 +509,8 @@ if __name__ == '__main__':
 
 	# Setup Unicorn light
 	setColor(50, 50, 50, 1, '')
-	unicorn.set_layout(unicorn.AUTO)
-	unicorn.brightness(0.5)
+	#unicorn.set_layout(unicorn.AUTO)
+	unicorn.set_brightness(0.5)
 
 	# Get the width and height of the hardware
 	width, height = unicorn.get_shape()
@@ -591,7 +598,7 @@ if __name__ == '__main__':
 			blinkThread.join()
 
 		# Get CPU temp
-		cpu = CPUTemperature()
+#		cpu = CPUTemperature()
 
 		# Print to display
 		os.system('clear')
@@ -601,8 +608,8 @@ if __name__ == '__main__':
 		print()
 		now = datetime.now()
 		print("Last API call:\t\t" + now.strftime("%Y-%m-%d %H:%M:%S"))
-		cpu_r = round(cpu.temperature, 2)
-		print("Current CPU:\t\t" + str(cpu_r) + "°C")
+#		cpu_r = round(cpu.temperature, 2)
+#		print("Current CPU:\t\t" + str(cpu_r) + "°C")
 
 		if args.brightness:
 			printwarning("Option:\t\t\t" + "Set brightness to " + str(brightness))
